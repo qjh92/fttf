@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="static/cirrus/cirrus.min.css">
+
+    <style type="text/css">
+        body{
+            margin: 20px;
+        }
+        input {
+            margin: 10px;
+        }
+        select {
+            margin: 10px;
+        }
+        textarea {
+            margin: 10px;
+            resize: none;
+        }
+
+        button{
+            width: 150px;
+            margin: 20px;
+        }
+
+    </style>
+
+
+    <script src="static/jquery-1.11.3.min.js"></script>
+
+    <script>
+        function go(){
+            var RuleName=$('#RuleName').val();
+            var PGmod=$('#PGmod').val();
+            var LocalPath=$('#LocalPath').val();
+            var RemoteIP=$('#RemoteIP').val();
+            var RemotePath=$('#RemotePath').val();
+            var RemotePort=$('#RemotePort').val();
+            var OverWrite=$('#OverWrite').val();
+            var Describle=$('#Describle').val();
+
+            $.ajax({
+                url: "/addconfig",
+                data: {
+                    RuleName: RuleName,
+                    PGmod: PGmod,
+                    LocalPath: LocalPath,
+                    RemoteIP: RemoteIP,
+                    RemotePort: RemotePort,
+                    RemotePath: RemotePath,
+                    OverWrite: OverWrite,
+                    Describle: Describle
+                },
+                type: "POST",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        $('#RspMsg').val("操作成功!");
+
+                        alert("操作成功!")
+
+                    }else
+                    {
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="row no-space">
+    <div class="col-2">
+        <div>
+
+            <input id="RuleName"  class="input--sm" type="text" placeholder="RuleName">
+            <input id="LocalPath" class="input--sm" type="text" placeholder="LocalPath">
+            <input id="RemoteIP" class="input--sm" type="text" placeholder="RemoteIP">
+
+            <input id="RemotePath" class="input--sm" type="text" placeholder="RemotePath">
+            <div style="text-align: center;">
+                <button class="btn-info" onclick="go();" >提交</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-1">
+
+    </div>
+    <div class="col-2">
+        <div>
+
+
+                <select  id="PGmod" class="select input--sm">
+                    <option value="put">put方式</option>
+                    <option value="get">get方式</option>
+                </select>
+
+
+
+            <select id="OverWrite" class="select input--sm">
+                <option value="true">允许覆盖</option>
+                <option value="false">不能覆盖</option>
+            </select>
+
+            <input id="RemotePort" class="input--sm" type="text" placeholder="RemotePort,32666">
+            <input id="Describle" class="input--sm" type="text" placeholder="Describle">
+            <div style="text-align: center;">
+                <button class="btn-warning" >清空</button>
+            </div>
+
+        </div>
+    </div>
+
+
+
+</div>
+<div class="row no-space">
+    <div class="col-5">
+
+        <textarea id="RspMsg" readonly placeholder=""></textarea>
+    </div>
+
+</div>
+
+</body>
+</html>

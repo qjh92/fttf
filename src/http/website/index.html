@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <script src="static/jquery-1.11.3.min.js"></script>
+
+    <script type="text/javascript">
+        function wSize(){
+            var h=$(document).height()
+            var w=$(window).height()
+            console.log(w)
+            if(w<400){
+                return;
+            }
+            $("#iframeContent").height(w-110)
+
+        }
+        $(window).resize(wSize);//添加监控页面窗口变化的方法
+
+        $(document).ready(wSize);//初始化设置高度
+
+    </script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #iframeTop{
+            width: 100%;
+            height: 48px;
+            /* background-color: antiquewhite;*/
+        }
+        #iframeFooter{
+            width: 100%;
+            height: 46px;
+            /*background-color: cadetblue;*/
+        }
+        #iframeContent{
+            width: 100%;
+            height: 400px;
+            /*background-color: cadetblue;*/
+        }
+    </style>
+
+
+
+</head>
+<body >
+    <iframe id="iframeTop" name="iframeTop" frameborder="0" src="top.html"></iframe>
+    <iframe id="iframeContent" name="iframeContent" frameborder="0" src="content.html"></iframe>
+    <iframe id="iframeFooter" name="iframeFooter" frameborder="0" src="footer.html"></iframe>
+</body>
+</html>

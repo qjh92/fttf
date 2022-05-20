@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="static/cirrus/cirrus.min.css">
+    <script src="static/jquery-1.11.3.min.js"></script>
+
+    <style type="text/css">
+        body{
+            padding: 20px;
+        }
+        a {
+            color: black;
+        }
+        a:hover {
+            color: black;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+
+        function queryonetask(){
+            $('#RspMsg').val("");
+
+            var taskno=$('#taskno').val()
+            var filename=taskno
+            if (filename==""){
+                alert("请输入taskno!")
+                return
+            }
+            $.ajax({
+                url: "/queryonetask?filename="+filename,
+                data: {
+                },
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        $('#RspMsg').val(JSON.stringify(rspjson.RspMsg,null,4));
+                        binddatalistseqno(rspjson.RspMsg.SubSeqno)
+                    }else
+                    {
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+        function binddatalistseqno(data){
+            $('#seqno').empty()
+
+            if (data!=null &&  data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    var item=data[i];
+                    $('#seqno')
+                        .append('<option id="'+item+'">'+item+'</option>');
+                }
+            }else{
+                $('#RspMsg').val("没有查询到相关的传输流水seqno");
+            }
+        }
+
+
+        function querylog(){
+            var seqno=$("#seqno").val()
+            $.ajax({
+                url: "log?seqno="+seqno,
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    $('#RspMsg').val(data);
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                    $('#RspMsg').val(data);
+                    alert("访问失败!")
+
+                }
+            });
+        }
+
+        function clearall(){
+            $('#RspMsg').val("");
+            $('#taskno').val("");
+            $('#seqno').empty();
+        }
+
+
+    </script>
+
+</head>
+<body>
+<div class="grid u-gap-2">
+
+    <div class="grid-c-2" >
+        <input id="taskno" type="text" class="input--sm" placeholder="TaskNo"/>
+    </div>
+
+    <div class="grid-c-1" style="margin: 0 auto;" >
+        <button type="button" class="btn-info btn--sm" onclick="queryonetask();">查询</button>
+    </div>
+    <div class="grid-c-1" style="margin: 0 auto;" >
+        <button type="button" class="btn-link btn--sm" onclick="clearall();">清空</button>
+    </div>
+    <div class="grid-c-8" >
+
+    </div>
+    <div class="grid-c-4 grid-r-1">
+        <select id="seqno" class="select input--sm" style="height: 700px;" multiple onclick="querylog()">
+            <option>Shibe</option>
+            <option>Doggo</option>
+            <option>Pupper</option>
+        </select>
+    </div>
+    <div class="grid-c-8 grid-r-1" >
+        <textarea id="RspMsg" class="input--sm" style="resize: none;overflow: auto; height: 700px;" readonly placeholder=""></textarea>
+    </div>
+
+</div>
+
+</body>
+</html>

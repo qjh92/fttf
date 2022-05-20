@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="static/cirrus/cirrus.min.css">
+
+    <script src="static/jquery-1.11.3.min.js"></script>
+
+    <style type="text/css">
+        body{
+            margin: 30px;
+        }
+    </style>
+
+    <script>
+        function go(){
+            var RuleName=$('#RuleName').val();
+            var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
+
+            $.ajax({
+                url: "/gotest",
+                data: {
+                    RuleName: RuleName,
+                    SrcFileOrDirPath: SrcFileOrDirPath
+                },
+                type: "POST",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        $('#RspMsg').val(rspjson.RspMsg);
+
+                        alert("操作成功!")
+
+                    }else
+                    {
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+        function go_get(){
+            var RuleName=$('#RuleName').val();
+            var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
+
+            $.ajax({
+                url: "/gotest?RuleName="+RuleName+"&SrcFileOrDirPath="+SrcFileOrDirPath,
+
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作成功!")
+
+                    }else
+                    {
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+    </script>
+
+</head>
+<body>
+<div class="row">
+    <div class="col-4 uppercase">
+
+        <div class="row level">
+            <div class="col-xs-4 level-item">
+                <p class="m-0">RuleName:</p>
+            </div>
+            <div class="col-xs-8 level-item">
+                <input id="RuleName"  class="input--sm" type="text" placeholder="RuleName">
+            </div>
+        </div>
+
+        <div class="row level">
+            <div class="col-xs-4 level-item">
+                <p class="m-0">SrcPath:</p>
+            </div>
+            <div class="col-xs-8 level-item">
+                <input id="SrcFileOrDirPath"  class="input--sm" type="text" placeholder="SrcPath">
+            </div>
+        </div>
+
+        <div class="row level">
+            <div class="col-xs-4 level-item">
+
+            </div>
+            <div class="col-xs-8 level-item">
+                <div class="col-xs-6 level-item">
+                    <button class="btn-info" onclick="go();" >Post提交</button>
+                </div>
+                <div class="col-xs-6 level-item">
+                    <button class="btn-warning" onclick="go_get();" >Get提交</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row level">
+            <div class="col-xs-4 level-item">
+
+            </div>
+            <div class="col-xs-8 level-item">
+                <textarea id="RspMsg" style="resize: none;height: 200px; background-color: #fcfcfc;" readonly> </textarea>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+</body>
+</html>
