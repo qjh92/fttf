@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="static/cirrus/cirrus.min.css">
+
+    <style type="text/css">
+        body{
+            padding: 20px;
+        }
+        a {
+            color: black;
+        }
+        a:hover {
+            color: black;
+        }
+
+    </style>
+
+    <script src="static/jquery-1.11.3.min.js"></script>
+
+
+</head>
+<body>
+<div class="grid u-gap-2">
+
+    <div class="grid-c-2 grid-r-1" >
+        <input id="CrontabName" type="text" autocomplete="off" class="input--xs" placeholder="CrontabName"/>
+    </div>
+
+    <div class="grid-c-10 grid-r-6" style="background-color: #cccccc;margin-left: 30px;" >
+        crontab table
+    </div>
+
+    <div class="grid-c-2 grid-r-1" >
+        <input id="CrontabExp"  list="cronlist" type="text" class="input--xs" placeholder="CrontabExp"/>
+        <datalist id="cronlist">
+            <option value="* * * * *">每一分钟</option>
+            <option value="*/5 * * * *">每5分钟</option>
+            <option value="*/60 * * * *">每小时</option>
+            <option value="30,45 * * * *">在每日30分、45分时</option>
+            <option value="0 23 * * *">每日23点</option>
+            <option value="0 5,8 * * *">在每日5点、8点</option>
+        </datalist>
+    </div>
+
+
+    <div class="grid-c-2 grid-r-1" >
+        <input id="RuleName" list="rulenamelist" type="text" autocomplete="off" class="input--xs" placeholder="RuleName"/>
+        <datalist id="rulenamelist">
+        </datalist>
+    </div>
+
+    <div class="grid-c-2 grid-r-1" >
+        <input id="SrcPath" type="text" class="input--xs" placeholder="SrcPath"/>
+    </div>
+
+    <div class="grid-c-1 grid-r-1" style="margin: 0 auto;" >
+        <button type="button" class="btn-info btn--xs" onclick="bindRuleList('rulenamelist');">添  加</button>
+    </div>
+
+    <div class="grid-c-1 grid-r-1" >
+        <button type="button" class="btn-warning btn--xs" onclick="">清  空</button>
+    </div>
+
+    <div class="grid-c-2 grid-r-1" >
+        <textarea id="RspMsg" class="input--sm" style="resize: none;overflow: auto; height: 200px;" readonly placeholder=""></textarea>
+    </div>
+
+    <script type="text/javascript">
+        function bindRuleList(id){
+            var rulelist=$('#'+id)
+            rulelist.empty()
+            $.ajax({
+                url: "/listconfig",
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        if (rspjson.RspMsg!=null &&  rspjson.RspMsg.length > 0) {
+                            for (var i = 0; i < rspjson.RspMsg.length; i++) {
+                                var item=rspjson.RspMsg[i];
+                                rulelist.append('<option>'+item+'</option>');
+                            }
+                        }
+
+                    }else
+                    {
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+        $(document).ready(bindRuleList("rulenamelist"));
+    </script>
+
+</div>
+</body>
+</html>
