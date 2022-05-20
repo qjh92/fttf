@@ -96,6 +96,24 @@
             $('#seqno').empty();
         }
 
+        function dark(){
+            var ckd=$("#dark")[0].checked
+            if(ckd){
+                $('#RspMsg').css("backgroundColor","black")
+                $('#RspMsg').css("color","white")
+
+                $('#seqno').css("backgroundColor","black")
+                $('#seqno').css("color","white")
+            }else
+            {
+                $('#RspMsg').css("backgroundColor","white")
+                $('#RspMsg').css("color","black")
+
+                $('#seqno').css("backgroundColor","white")
+                $('#seqno').css("color","black")
+            }
+        }
+
 
     </script>
 
@@ -104,23 +122,27 @@
 <div class="grid u-gap-2">
 
     <div class="grid-c-2" >
-        <input id="taskno" type="text" class="input--sm" placeholder="TaskNo"/>
+        <input id="taskno" type="text" class="input--xs" placeholder="TaskNo"/>
     </div>
 
     <div class="grid-c-1" style="margin: 0 auto;" >
-        <button type="button" class="btn-info btn--sm" onclick="queryonetask();">查询</button>
+        <button type="button" class="btn-info btn--xs" onclick="queryonetask();">查询</button>
     </div>
     <div class="grid-c-1" style="margin: 0 auto;" >
-        <button type="button" class="btn-link btn--sm" onclick="clearall();">清空</button>
+        <button type="button" class="btn-link btn--xs" onclick="clearall();">清空</button>
     </div>
-    <div class="grid-c-8" >
+    <div class="grid-c-7" >
 
     </div>
+    <div class="grid-c-1" >
+        <div class="form-ext-control form-ext-checkbox">
+            <input id="dark" class="form-ext-input input--xs" type="checkbox" onclick="dark()">
+            <label  class="form-ext-label" for="dark" >Dark</label>
+        </div>
+    </div>
+
     <div class="grid-c-4 grid-r-1">
-        <select id="seqno" class="select input--sm" style="height: 700px;" multiple onclick="querylog()">
-            <option>Shibe</option>
-            <option>Doggo</option>
-            <option>Pupper</option>
+        <select id="seqno" class="select input--sm" style="height: 700px;overflow: auto;" multiple onclick="querylog()">
         </select>
     </div>
     <div class="grid-c-8 grid-r-1" >
