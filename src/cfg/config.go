@@ -48,7 +48,7 @@ func SaveConfig(c Config) (ok bool, er error) {
 	defer mxlock.Unlock()
 
 	var filename = c.RuleName
-	fw, err := os.OpenFile("configs"+string(filepath.Separator)+filename+".ftc", os.O_WRONLY|os.O_CREATE, 0644)
+	fw, err := os.OpenFile("configs"+string(filepath.Separator)+filename+".ftc", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	defer fw.Close()
 
 	if err != nil {
@@ -61,11 +61,11 @@ func SaveConfig(c Config) (ok bool, er error) {
 
 }
 
-func ReadAllConfig() map[string]*Config {
+func ReadAllConfig() (map[string]*Config,error) {
 	fs, err := ioutil.ReadDir("configs")
 	if err != nil {
 		logimp.Warn(mylog, "读取configs目录失败。%v", err)
-		return nil
+		return nil,err
 	}
 
 	configmap := make(map[string]*Config, len(fs))
@@ -84,7 +84,7 @@ func ReadAllConfig() map[string]*Config {
 	}
 
 	logimp.Info(mylog, "%v", configmap)
-	return configmap
+	return configmap,nil
 
 }
 
@@ -132,4 +132,8 @@ func DeleteConfig(m map[string]*Config, rn string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func FlushConfig()(map[string]*Config,error){
+	return ReadAllConfig()
 }

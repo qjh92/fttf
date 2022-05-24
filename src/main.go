@@ -28,7 +28,7 @@ func main() {
 	logimp.Info(mylog, "%s\n", startinfo())
 
 	cfg.Init(mylog)
-	configmap = cfg.ReadAllConfig()
+	configmap,_ = cfg.ReadAllConfig()
 
 	http.Init(mylog, configmap)
 
@@ -37,6 +37,7 @@ func main() {
 	scheduler.Init(configmap)
 
 	crontab.Init(mylog)
+	crontab.ReadAllCrontab()
 
 	var sport int
 	var hport int

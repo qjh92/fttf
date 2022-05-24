@@ -56,6 +56,10 @@ func Init(b map[string]*cfg.Config) {
 	}
 }
 
+func GetTaskMap()map[string]*Task{
+	return taskmap
+}
+
 func CreateTask(rulename string, path string) (taskno string, initerror error) {
 
 	c, ok := configmap[rulename]

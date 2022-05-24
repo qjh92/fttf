@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"fttf/src/cfg"
+	"fttf/src/crontab"
 	"fttf/src/logimp"
 	"fttf/src/scheduler"
 	"fttf/src/tool"
@@ -69,6 +70,13 @@ func RunHttpServer(hport int) {
 	http.HandleFunc("/deleteconfig", deleteConfig)
 	http.HandleFunc("/queryalltask", queryalltask)
 	http.HandleFunc("/queryonetask", queryonetask)
+	http.HandleFunc("/flushconfig", flushconfig)
+
+	http.HandleFunc("/addcrontab", addcrontab)
+	http.HandleFunc("/queryallcrontab", queryAllCrontab)
+	http.HandleFunc("/deletecrontab", deletecrontab)
+	http.HandleFunc("/changecrontabstat", changecrontabstat)
+
 
 	http.HandleFunc("/gotest", goTest)
 
@@ -535,6 +543,242 @@ func queryonetask(w http.ResponseWriter, r *http.Request) {
 	ResponseOK(w, t)
 
 }
+
+func flushconfig(w http.ResponseWriter, r *http.Request) {
+
+	logimp.Printf("req path=%s\n", r.URL.Path)
+	cm,err:=cfg.FlushConfig()
+
+	if err != nil {
+		ResponseERRORFormat(w, "%v", err)
+		return
+	}else{
+		configmap=cm
+		ResponseOK(w, "ok")
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//添加配置
+func addcrontab(w http.ResponseWriter, r *http.Request) {
+
+	logimp.Printf("req path=%s\n", r.URL.Path)
+
+	r.ParseForm()
+	params := r.Form
+
+	crontabmap:=crontab.GetCrontab()
+
+	var cron crontab.CronTab
+
+	v, ok := params["CrontabName"]
+	if ok && len(v[0]) > 0 {
+		cron.CrontabName = v[0]
+	} else {
+		ResponseERROR(w, "任务名称参数不合法!")
+		return
+	}
+
+	v, ok = params["CrontabExp"]
+	if ok && len(v[0]) > 0 {
+		cron.CrontabExp = v[0]
+	} else {
+		ResponseERROR(w, "crontab表达式不合法!")
+		return
+	}
+
+	v, ok = params["RuleName"]
+	if ok && len(v[0]) > 0 {
+		rn:=v[0]
+		if _,b:=configmap[rn];b==false{
+			ResponseERROR(w, "RuleName不存在!")
+			return
+		}
+		cron.RuleName=v[0]
+	} else {
+		ResponseERROR(w, "RuleName参数不合法!")
+		return
+	}
+
+	v, ok = params["SrcPath"]
+	if ok && len(v[0]) > 0 {
+		cron.SrcPath = v[0]
+	} else {
+		ResponseERROR(w, "SrcPath参数不合法!")
+		return
+	}
+
+	v, ok = params["Describle"]
+	if ok {
+		cron.Describe = v[0]
+	}
+
+	cron.CreateTime = time.Now().Format("2006-01-02 15:04:05")
+
+	logimp.Printf("%#v\n", cron)
+
+
+	logimp.Printf("%#v\n", crontabmap)
+	//配置是否已经存在，存在返回异常
+	_, ok = crontabmap[cron.CrontabName]
+	if ok {
+		logimp.Printf("crontab配置信息 %s 已存在,不能重复添加!", cron.CrontabName)
+		ResponseERRORFormat(w, "crontab配置信息 %s 已存在,不能重复添加!", cron.CrontabName)
+		return
+	}
+
+	//保存配置信息
+	rtnstat, err :=crontab.SaveCrontab(cron)
+	if rtnstat == false {
+		logimp.Warn(mylog, "保存crontab配置信息失败!%v", err)
+		ResponseERRORFormat(w, "保存crontab配置信息失败!%v", err)
+		return
+	}
+
+	//加锁，对crontabmap进行处理，如果已经存在，则刷新；如果没有，则新增
+	mxlock.Lock()
+	crontabmap[cron.CrontabName] = &cron
+	mxlock.Unlock()
+
+	logimp.Printf("%#v\n", crontabmap)
+
+	ResponseOK(w, "ok")
+
+}
+func queryAllCrontab(w http.ResponseWriter, r *http.Request) {
+
+	logimp.Printf("req path=%s\n", r.URL.Path)
+
+	r.ParseForm()
+	params := r.Form
+
+	v, _ := params["min_key"]
+	min_key := v[0]
+	v, _ = params["max_key"]
+	max_key := v[0]
+	v, _ = params["up_down"]
+	up_down := v[0]
+
+	fmt.Printf("min=%s,max=%s,ud=%s\n", min_key, max_key, up_down)
+
+	crontabmap:=crontab.GetCrontab()
+
+	//取出map中的所有key存入切片keys
+	var keys_con = make([]string, 0, 200)
+	for k, v := range crontabmap {
+		nk := v.CreateTime + "|" + k
+		keys_con = append(keys_con, nk)
+	}
+
+	//对切片进行排序
+	sort.Strings(keys_con)                  //[x1,x2,x3,...] 排序后，为正向；
+	var keys_con_2 = make([]string, 0, 200) //keys_con_2是逆向排序，由大到小
+	for i := len(keys_con); i > 0; i-- {
+		keys_con_2 = append(keys_con_2, keys_con[i-1])
+	}
+
+	startindex, endindex := tool.PageCompute(keys_con_2, min_key, max_key, up_down)
+
+	var rsp = Rsp{
+		RspCode:    cfg.OK,
+		RspMsg:     crontabmap,
+		RspExtMsg:  keys_con_2[startindex : endindex+1],
+		PageUp:     startindex > 0,
+		PageDown:   endindex < len(keys_con_2)-1,
+		TotalCount: len(keys_con_2),
+		StartIndex: startindex,
+		EndIndex:   endindex,
+	}
+
+	ResponseOKWithStruct(w, rsp)
+}
+
+
+//删除配置，一是map，而是文件
+func deletecrontab(w http.ResponseWriter, r *http.Request) {
+
+	logimp.Printf("req path=%s\n", r.URL.Path)
+
+	r.ParseForm()
+	params := r.Form
+
+	var crontabname string
+
+	v, ok := params["CrontabName"]
+	if ok && len(v[0]) > 0 {
+		crontabname = v[0]
+	} else {
+		ResponseERROR(w, "CrontabName参数不合法!")
+		return
+	}
+
+	a, e := crontab.DeleteCrontab(crontab.GetCrontab(),crontabname)
+	if a {
+		crontab.RemoveCronInstance(crontabname)
+		ResponseOK(w, "ok")
+	} else {
+		ResponseERROR(w, e)
+	}
+
+}
+
+
+func changecrontabstat(w http.ResponseWriter, r *http.Request) {
+
+	logimp.Printf("req path=%s\n", r.URL.Path)
+
+	r.ParseForm()
+	params := r.Form
+
+	var Enable string
+	var CrontabName string
+
+	v, ok := params["Enable"]
+	if ok && len(v[0]) > 0 {
+		Enable = v[0]
+	} else {
+		ResponseERROR(w, "Stat参数不合法!")
+		return
+	}
+
+	v, ok = params["CrontabName"]
+	if ok && len(v[0]) > 0 {
+		CrontabName = v[0]
+	} else {
+		ResponseERROR(w, "CrontabName参数不合法!")
+		return
+	}
+
+	b,eb:=strconv.ParseBool(Enable)
+	if eb!=nil{
+		ResponseERROR(w, "Stat参数不合法!")
+		return
+	}
+
+	crontabmap:=crontab.GetCrontab()
+	_,ok=crontabmap[CrontabName]
+	if ok==false{
+		ResponseERROR(w, "自动任务不存在!"+CrontabName)
+		return
+	}
+
+	crontabmap[CrontabName].Enable=b
+	crontab.SaveCrontab(*crontabmap[CrontabName])
+
+	if b{
+		crontab.AddCronInstance(*crontabmap[CrontabName])
+	}else{
+		crontab.RemoveCronInstance(CrontabName)
+	}
+
+	ResponseOK(w, "ok")
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func Response(w http.ResponseWriter, rsp Rsp) {
 	data, _ := json.Marshal(rsp)

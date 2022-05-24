@@ -18,6 +18,11 @@
             color: black;
         }
 
+        .table.small td, .table.small th {
+            padding: 0.05rem 0.35rem;
+            vertical-align: middle;
+        }
+
     </style>
 
     <script src="static/jquery-1.11.3.min.js"></script>
@@ -31,8 +36,48 @@
         <input id="CrontabName" type="text" autocomplete="off" class="input--xs" placeholder="CrontabName"/>
     </div>
 
-    <div class="grid-c-10 grid-r-6" style="background-color: #cccccc;margin-left: 30px;" >
-        crontab table
+    <div class="grid-c-10 grid-r-7" style="margin-left: 30px;" >
+        <table id="t" class="table small bordered ">
+            <thead>
+            <tr>
+                <th>CrontabName</th>
+                <th>CrontabExp</th>
+                <th>RuleName</th>
+                <th>SrcPath</th>
+                <th>Describle</th>
+                <th>CreateTime</th>
+                <th>Enable</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody id="tb">
+
+            </tbody>
+        </table>
+        <!-- page info -->
+        <div class="row">
+            <div class="col-1 ">
+                <div class="pagination pagination-bordered">
+                    <div class="pagination-item short "><a id="pageup" href="javascript:void(0);" onclick="up();">Prev</a></div>
+                </div>
+            </div>
+            <div class="col-4 ">
+
+            </div>
+
+            <div class="col-2 ">
+                <p id="pgnum" style="color: #a7a6a6;margin-top: 10px;">1-10/20</p>
+            </div>
+
+            <div class="col-4 ">
+
+            </div>
+            <div class="col-1 ">
+                <div class="pagination pagination-bordered">
+                    <div class="pagination-item short"><a id="pagedown" href="javascript:void(0);" onclick="down();">Next</a></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="grid-c-2 grid-r-1" >
@@ -58,19 +103,47 @@
         <input id="SrcPath" type="text" class="input--xs" placeholder="SrcPath"/>
     </div>
 
+    <div class="grid-c-2 grid-r-1" >
+        <input id="Describle" type="text" autocomplete="off" class="input--xs" placeholder="Describle"/>
+    </div>
+
     <div class="grid-c-1 grid-r-1" style="margin: 0 auto;" >
-        <button type="button" class="btn-info btn--xs" onclick="bindRuleList('rulenamelist');">添  加</button>
+        <button type="button" class="btn-info btn--xs" onclick="go();">添  加</button>
     </div>
 
     <div class="grid-c-1 grid-r-1" >
         <button type="button" class="btn-warning btn--xs" onclick="">清  空</button>
     </div>
 
+
+
     <div class="grid-c-2 grid-r-1" >
         <textarea id="RspMsg" class="input--sm" style="resize: none;overflow: auto; height: 200px;" readonly placeholder=""></textarea>
     </div>
 
     <script type="text/javascript">
+
+        var min_key=""
+        var max_key=""
+        var up_down="down"
+
+        function up(){
+            up_down="up"
+            gofun()
+
+        }
+        function down(){
+            up_down="down"
+            gofun()
+        }
+
+        function query(){
+            min_key=""
+            max_key=""
+            up_down="down"
+            gofun()
+        }
+
         function bindRuleList(id){
             var rulelist=$('#'+id)
             rulelist.empty()
@@ -100,7 +173,187 @@
             });
         }
 
+        function go(){
+            var RuleName=$('#RuleName').val();
+            var CrontabName=$('#CrontabName').val();
+            var CrontabExp=$('#CrontabExp').val();
+            var SrcPath=$('#SrcPath').val();
+            var Describle=$('#Describle').val();
+
+            $.ajax({
+                url: "/addcrontab",
+                data: {
+                    RuleName: RuleName,
+                    CrontabName: CrontabName,
+                    CrontabExp: CrontabExp,
+                    SrcPath: SrcPath,
+                    Describle: Describle
+                },
+                type: "POST",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        $('#RspMsg').val("操作成功!");
+
+                        alert("操作成功!")
+                        query()
+
+                    }else
+                    {
+                        $('#RspMsg').val(rspjson.RspMsg);
+                        alert("操作失败!")
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+        gofun=function queryall(){
+            $.ajax({
+                url: "/queryallcrontab?min_key="+min_key+"&max_key="+max_key+"&up_down="+up_down,
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+                        binddatalist(rspjson)
+                    }else
+                    {
+                        alert("操作失败!\r\n"+rspjson.RspMsg)
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
+        function binddatalist(data){
+            $('#tb').empty()
+            var rspjson = data;
+            if (rspjson.RspExtMsg!=null &&  rspjson.RspExtMsg.length > 0) {
+                for (var i = 0; i< rspjson.RspExtMsg.length; i++) {
+                    var conk=rspjson.RspExtMsg[i]; //"2022-05-17 14:15:19|1"
+                    var ss= conk.split('|')
+                    var k=ss[1]
+                    var CrontabName=rspjson.RspMsg[k].CrontabName;
+                    var CrontabExp=rspjson.RspMsg[k].CrontabExp;
+                    var RuleName=rspjson.RspMsg[k].RuleName;
+                    var SrcPath=rspjson.RspMsg[k].SrcPath;
+                    var Describe=rspjson.RspMsg[k].Describe;
+                    var CreateTime=rspjson.RspMsg[k].CreateTime;
+                    var Enable=rspjson.RspMsg[k].Enable;
+
+
+                    $('#tb').append('<tr>');
+                    $('#tb').append('<th>'+CrontabName+'</th>');
+                    $('#tb').append('<td>'+CrontabExp+'</td>');
+                    $('#tb').append('<td>'+RuleName+'</td>');
+                    $('#tb').append('<td><input class="input--xs" readonly type="text" value="'+SrcPath+'"></td>');
+                    $('#tb').append('<td><input class="input--xs" readonly type="text" value="'+Describe+'"></td>');
+                    $('#tb').append('<td>'+CreateTime+'</td>');
+                    if(Enable==false){
+                        $('#tb').append('<td><button class="btn-warning btn--xs" style="margin-top: 10px;" bddt="'+CrontabName+'" onclick="changecrontabstat(this,true)">Disable</td></td>');
+                    }else{
+                        $('#tb').append('<td><button class="btn-success btn--xs" style="margin-top: 10px;" bddt="'+CrontabName+'" onclick="changecrontabstat(this,false)">Enable</td></td>');
+                    }
+                    $('#tb').append('<td><button class="btn-danger btn--xs" style="margin-top: 10px;" bddt="'+CrontabName+'" onclick="deleteconfig(this)">删除</td>');
+                    $('#tb').append('</tr>');
+
+                }
+
+                max_key=rspjson.RspExtMsg[0]
+                min_key=rspjson.RspExtMsg[rspjson.RspExtMsg.length-1]
+                console.log(min_key)
+                console.log(max_key)
+
+                if(rspjson.PageUp==false){
+                    $("#pageup").attr("class","disabled")
+                }else{
+                    $("#pageup").attr("class","")
+                }
+
+                if(rspjson.PageDown==false){
+                    $("#pagedown").attr("class","disabled")
+                }else {
+                    $("#pagedown").attr("class","")
+                }
+
+                var s_str=String(Number(rspjson.StartIndex)+1)
+                var e_str=String(Number(rspjson.EndIndex)+1)
+                var tot=rspjson.TotalCount
+                $('#pgnum').text(s_str+"-"+e_str+" / "+tot)
+
+            }else{
+                $('#pgnum').text("- / -")
+            }
+        }
+
+        function deleteconfig(obj){
+            var CrontabName=$(obj).attr('bddt');
+
+            if(confirm("确定要删除"+CrontabName+"吗？"))
+            {
+                $('#RspMsg').val("");
+
+                $.ajax({
+                    url: "/deletecrontab?CrontabName="+CrontabName,
+                    type: "GET",
+                    //dataType: "json",
+                    success: function(data) {
+                        console.log(data);
+                        var rspjson = $.parseJSON(data);
+                        if(rspjson.RspCode==0){
+                            alert("删除成功!")
+                            query()
+                        }else
+                        {
+                            alert("删除失败!")
+                        }
+
+                    },
+                    error:()=>{  // 发送失败的回调函数
+                        console.log("失败");
+                    }
+                });
+            }
+        }
+
+        function changecrontabstat(obj,bv){
+            var CrontabName=$(obj).attr('bddt');
+            if(confirm("确定要更改"+CrontabName+"吗？")){
+                $.ajax({
+                    url: "/changecrontabstat?CrontabName="+CrontabName+"&Enable="+bv,
+                    type: "GET",
+                    //dataType: "json",
+                    success: function(data) {
+                        console.log(data);
+                        var rspjson = $.parseJSON(data);
+                        if(rspjson.RspCode==0){
+                            query()
+                        }else
+                        {
+                            alert("操作失败!")
+                        }
+
+                    },
+                    error:()=>{  // 发送失败的回调函数
+                        console.log("失败");
+                    }
+                });
+            }
+
+
+        }
+
         $(document).ready(bindRuleList("rulenamelist"));
+        $(document).ready(gofun());
+
     </script>
 
 </div>

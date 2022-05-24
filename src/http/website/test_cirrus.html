@@ -74,6 +74,30 @@
                 }
             });
         }
+
+        function flush(){
+            $.ajax({
+                url: "/flushconfig",
+                type: "GET",
+                //dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    var rspjson = $.parseJSON(data);
+                    if(rspjson.RspCode==0){
+
+                        alert("操作成功!")
+
+                    }else
+                    {
+                        alert("操作失败!\r\n"+rspjson.RspMsg)
+                    }
+                },
+                error:()=>{  // 发送失败的回调函数
+                    console.log("失败");
+                }
+            });
+        }
+
     </script>
 
 </head>
@@ -122,6 +146,8 @@
             </div>
         </div>
 
+        <hr style="margin: 20px;">
+        <button class="btn-info btn--xs" onclick="flush();" >刷新Rule规则</button>
 
     </div>
 </div>
