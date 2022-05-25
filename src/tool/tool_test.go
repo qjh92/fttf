@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-func TestPathProc(t *testing.T) {
-	PathProc("c:\\a")
-}
-
 func TestTempTest(t *testing.T) {
 	TempTest()
 }

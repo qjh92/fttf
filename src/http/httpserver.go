@@ -58,6 +58,17 @@ func RunHttpServer(hport int) {
 
 	logimp.Info(mylog, "启动httpserver......hport=%d\n", hport)
 
+	urlDispacher()
+
+	err := server.ListenAndServe()
+	if err != nil {
+		logimp.ErrorQuit(mylog, "启动httpserver失败,hport=%d,error=%v \n", hport, err)
+		return
+	}
+
+}
+
+func urlDispacher() {
 	http.HandleFunc("/", index)
 
 	http.HandleFunc("/static/", staticResource) //web静态资源，已经内嵌入程序包中
@@ -68,31 +79,20 @@ func RunHttpServer(hport int) {
 	http.HandleFunc("/queryallconfig", queryAllConfig)
 	http.HandleFunc("/queryconfig", queryConfig)
 	http.HandleFunc("/deleteconfig", deleteConfig)
-	http.HandleFunc("/queryalltask", queryalltask)
-	http.HandleFunc("/queryonetask", queryonetask)
-	http.HandleFunc("/flushconfig", flushconfig)
+	http.HandleFunc("/queryalltask", queryAllTask)
+	http.HandleFunc("/queryonetask", queryOneTask)
+	http.HandleFunc("/flushconfig", flushConfig)
 
-	http.HandleFunc("/addcrontab", addcrontab)
+	http.HandleFunc("/addcrontab", addCrontab)
 	http.HandleFunc("/queryallcrontab", queryAllCrontab)
-	http.HandleFunc("/deletecrontab", deletecrontab)
-	http.HandleFunc("/changecrontabstat", changecrontabstat)
+	http.HandleFunc("/deletecrontab", deleteCrontab)
+	http.HandleFunc("/changecrontabstat", changeCrontabStat)
 
-
-	http.HandleFunc("/gotest", goTest)
-
-	err := server.ListenAndServe()
-	if err != nil {
-		logimp.ErrorQuit(mylog, "启动httpserver失败,hport=%d,error=%v \n", hport, err)
-		return
-	}
-
+	http.HandleFunc("/go", goTrans)
 }
 
 //处理html页面
 func index(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	var tp *template.Template
 	var templatePath string
 
@@ -120,8 +120,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 //处理static下的静态资源请求
 func staticResource(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	data, _ := websitefile.ReadFile("website" + r.URL.Path)
 	path := r.URL.Path
 	contentType := "text/plain"
@@ -146,8 +144,6 @@ func staticResource(w http.ResponseWriter, r *http.Request) {
 
 //处理/logs/下的资源请求
 func logsResource(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
 
 	r.ParseForm()
 	params := r.Form
@@ -179,8 +175,6 @@ func logsResource(w http.ResponseWriter, r *http.Request) {
 
 //添加配置
 func addConfig(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
 
 	r.ParseForm()
 	params := r.Form
@@ -288,8 +282,6 @@ func addConfig(w http.ResponseWriter, r *http.Request) {
 //返回配置规则名称json数组
 func listConfig(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	var confignames []string
 	for key := range configmap {
 		confignames = append(confignames, key)
@@ -299,8 +291,6 @@ func listConfig(w http.ResponseWriter, r *http.Request) {
 
 //根据规则名，查询详细配置并返回
 func queryConfig(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
 
 	r.ParseForm()
 	params := r.Form
@@ -327,8 +317,6 @@ func queryConfig(w http.ResponseWriter, r *http.Request) {
 //查询所有详细配置并返回
 func queryAllConfig(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	r.ParseForm()
 	params := r.Form
 
@@ -338,8 +326,6 @@ func queryAllConfig(w http.ResponseWriter, r *http.Request) {
 	max_key := v[0]
 	v, _ = params["up_down"]
 	up_down := v[0]
-
-	fmt.Printf("min=%s,max=%s,ud=%s\n", min_key, max_key, up_down)
 
 	//取出map中的所有key存入切片keys
 	var keys_con = make([]string, 0, 200)
@@ -374,8 +360,6 @@ func queryAllConfig(w http.ResponseWriter, r *http.Request) {
 //删除配置，一是map，而是文件
 func deleteConfig(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	r.ParseForm()
 	params := r.Form
 
@@ -398,9 +382,7 @@ func deleteConfig(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func goTest(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+func goTrans(w http.ResponseWriter, r *http.Request) {
 
 	//scheduler.RunTask("11","F:\\a\\4.zip")
 	r.ParseForm()
@@ -438,9 +420,7 @@ func goTest(w http.ResponseWriter, r *http.Request) {
 }
 
 //根据参数查询任务，日期必送，rulename、是否自动任务等条件选送
-func queryalltask(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+func queryAllTask(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	params := r.Form
@@ -517,9 +497,7 @@ func queryalltask(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func queryonetask(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+func queryOneTask(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	params := r.Form
@@ -544,16 +522,15 @@ func queryonetask(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func flushconfig(w http.ResponseWriter, r *http.Request) {
+func flushConfig(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-	cm,err:=cfg.FlushConfig()
+	cm, err := cfg.FlushConfig()
 
 	if err != nil {
 		ResponseERRORFormat(w, "%v", err)
 		return
-	}else{
-		configmap=cm
+	} else {
+		configmap = cm
 		ResponseOK(w, "ok")
 	}
 
@@ -562,14 +539,12 @@ func flushconfig(w http.ResponseWriter, r *http.Request) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //添加配置
-func addcrontab(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+func addCrontab(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	params := r.Form
 
-	crontabmap:=crontab.GetCrontab()
+	crontabmap := crontab.GetCrontab()
 
 	var cron crontab.CronTab
 
@@ -591,12 +566,12 @@ func addcrontab(w http.ResponseWriter, r *http.Request) {
 
 	v, ok = params["RuleName"]
 	if ok && len(v[0]) > 0 {
-		rn:=v[0]
-		if _,b:=configmap[rn];b==false{
+		rn := v[0]
+		if _, b := configmap[rn]; b == false {
 			ResponseERROR(w, "RuleName不存在!")
 			return
 		}
-		cron.RuleName=v[0]
+		cron.RuleName = v[0]
 	} else {
 		ResponseERROR(w, "RuleName参数不合法!")
 		return
@@ -619,7 +594,6 @@ func addcrontab(w http.ResponseWriter, r *http.Request) {
 
 	logimp.Printf("%#v\n", cron)
 
-
 	logimp.Printf("%#v\n", crontabmap)
 	//配置是否已经存在，存在返回异常
 	_, ok = crontabmap[cron.CrontabName]
@@ -630,7 +604,7 @@ func addcrontab(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//保存配置信息
-	rtnstat, err :=crontab.SaveCrontab(cron)
+	rtnstat, err := crontab.SaveCrontab(cron)
 	if rtnstat == false {
 		logimp.Warn(mylog, "保存crontab配置信息失败!%v", err)
 		ResponseERRORFormat(w, "保存crontab配置信息失败!%v", err)
@@ -649,8 +623,6 @@ func addcrontab(w http.ResponseWriter, r *http.Request) {
 }
 func queryAllCrontab(w http.ResponseWriter, r *http.Request) {
 
-	logimp.Printf("req path=%s\n", r.URL.Path)
-
 	r.ParseForm()
 	params := r.Form
 
@@ -661,9 +633,7 @@ func queryAllCrontab(w http.ResponseWriter, r *http.Request) {
 	v, _ = params["up_down"]
 	up_down := v[0]
 
-	fmt.Printf("min=%s,max=%s,ud=%s\n", min_key, max_key, up_down)
-
-	crontabmap:=crontab.GetCrontab()
+	crontabmap := crontab.GetCrontab()
 
 	//取出map中的所有key存入切片keys
 	var keys_con = make([]string, 0, 200)
@@ -695,11 +665,8 @@ func queryAllCrontab(w http.ResponseWriter, r *http.Request) {
 	ResponseOKWithStruct(w, rsp)
 }
 
-
 //删除配置，一是map，而是文件
-func deletecrontab(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+func deleteCrontab(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	params := r.Form
@@ -714,7 +681,7 @@ func deletecrontab(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a, e := crontab.DeleteCrontab(crontab.GetCrontab(),crontabname)
+	a, e := crontab.DeleteCrontab(crontab.GetCrontab(), crontabname)
 	if a {
 		crontab.RemoveCronInstance(crontabname)
 		ResponseOK(w, "ok")
@@ -724,10 +691,8 @@ func deletecrontab(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-func changecrontabstat(w http.ResponseWriter, r *http.Request) {
-
-	logimp.Printf("req path=%s\n", r.URL.Path)
+//修改crontab配置的状态，是否启用
+func changeCrontabStat(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	params := r.Form
@@ -751,32 +716,31 @@ func changecrontabstat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b,eb:=strconv.ParseBool(Enable)
-	if eb!=nil{
+	b, eb := strconv.ParseBool(Enable)
+	if eb != nil {
 		ResponseERROR(w, "Stat参数不合法!")
 		return
 	}
 
-	crontabmap:=crontab.GetCrontab()
-	_,ok=crontabmap[CrontabName]
-	if ok==false{
+	crontabmap := crontab.GetCrontab()
+	_, ok = crontabmap[CrontabName]
+	if ok == false {
 		ResponseERROR(w, "自动任务不存在!"+CrontabName)
 		return
 	}
 
-	crontabmap[CrontabName].Enable=b
+	crontabmap[CrontabName].Enable = b
 	crontab.SaveCrontab(*crontabmap[CrontabName])
 
-	if b{
+	if b {
 		crontab.AddCronInstance(*crontabmap[CrontabName])
-	}else{
+	} else {
 		crontab.RemoveCronInstance(CrontabName)
 	}
 
 	ResponseOK(w, "ok")
 
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 

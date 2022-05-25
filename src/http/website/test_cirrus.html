@@ -20,7 +20,7 @@
             var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
 
             $.ajax({
-                url: "/gotest",
+                url: "/go",
                 data: {
                     RuleName: RuleName,
                     SrcFileOrDirPath: SrcFileOrDirPath
@@ -52,7 +52,7 @@
             var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
 
             $.ajax({
-                url: "/gotest?RuleName="+RuleName+"&SrcFileOrDirPath="+SrcFileOrDirPath,
+                url: "/go?RuleName="+RuleName+"&SrcFileOrDirPath="+SrcFileOrDirPath,
 
                 type: "GET",
                 //dataType: "json",
@@ -147,7 +147,12 @@
         </div>
 
         <hr style="margin: 20px;">
-        <button class="btn-info btn--xs" onclick="flush();" >刷新Rule规则</button>
+        <div class="row level">
+            <div class="col-xs-12 level-item">
+                <button class="btn-info btn--xs" onclick="flush();" >刷新Rule规则</button>
+            </div>
+        </div>
+
 
     </div>
 </div>

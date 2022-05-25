@@ -34,43 +34,42 @@ github.com/robfig/cron/v3相关说明
 type CronTab struct {
 	CrontabName string
 	CrontabExp  string
-	RuleName	string
-	SrcPath 	string
-	Describe 	string
-	CreateTime	string
-	Enable		bool
+	RuleName    string
+	SrcPath     string
+	Describe    string
+	CreateTime  string
+	Enable      bool
 }
 
-func (this CronTab)Run(){
-	logimp.Info(mylog,"自动任务[%s]开始本次运行,%v\n",this.CrontabName,this)
-	logimp.Info(mylog,"自动任务[%s]开始本次运行，创建任务task",this.CrontabName)
+func (this CronTab) Run() {
+
+	logimp.Info(mylog, "自动任务[%s]开始本次运行,%#v\n", this.CrontabName, this)
+	logimp.Info(mylog, "自动任务[%s]开始本次运行，创建任务task", this.CrontabName)
 	taskno, err := scheduler.CreateTask(this.RuleName, this.SrcPath)
-	if err!=nil{
-		logimp.Warn(mylog,"自动任务[%s]开始本次运行，创建task失败,err=%v\n",this.CrontabName,err)
-	}else{
-		scheduler.GetTaskMap()[taskno].AutoMod=true
-		logimp.Info(mylog,"自动任务[%s]开始本次运行，TaskNo=%s\n",this.CrontabName,taskno)
+	if err != nil {
+		logimp.Warn(mylog, "自动任务[%s]开始本次运行，创建task失败,err=%v\n", this.CrontabName, err)
+	} else {
+		scheduler.GetTaskMap()[taskno].AutoMod = true
+		scheduler.GetTaskMap()[taskno].CrontabName = this.CrontabName
+		logimp.Info(mylog, "自动任务[%s]开始本次运行，TaskNo=%s\n", this.CrontabName, taskno)
 	}
 
-
-
-
-	err=scheduler.RunTaskWithTaskNO(taskno)
-	if err!=nil {
-		logimp.Warn(mylog,"自动任务[%s]开始本次运行，执行失败,err=%v\n",this.CrontabName,err)
-	}else{
-		logimp.Info(mylog,"自动任务[%s]本次运行完成\n",this.CrontabName)
+	err = scheduler.RunTaskWithTaskNO(taskno)
+	if err != nil {
+		logimp.Warn(mylog, "自动任务[%s]开始本次运行，执行失败,err=%v\n", this.CrontabName, err)
+	} else {
+		logimp.Info(mylog, "自动任务[%s]本次运行完成\n", this.CrontabName)
 	}
 }
 
-var crontabmap map[string]*CronTab
+var crontabMap map[string]*CronTab
 var mxlock sync.Mutex // 互斥锁
 var mylog *log.Logger
 var fw *os.File
 
 var GCron *cron.Cron
 
-var croninstancemap map[string]int
+var cronInstanceMap map[string]int
 
 func Init(a *log.Logger) {
 	mylog = a
@@ -80,8 +79,8 @@ func Init(a *log.Logger) {
 		os.MkdirAll("crontabs", os.ModePerm)
 	}
 
-	croninstancemap= make(map[string]int, 20)
-	GCron=cron.New()
+	cronInstanceMap = make(map[string]int, 20)
+	GCron = cron.New()
 
 }
 
@@ -109,14 +108,14 @@ func SaveCrontab(c CronTab) (ok bool, er error) {
 
 }
 
-func ReadAllCrontab() (map[string]*CronTab,error) {
+func ReadAllCrontab() (map[string]*CronTab, error) {
 	fs, err := ioutil.ReadDir("crontabs")
 	if err != nil {
 		logimp.Warn(mylog, "crontabs。%v", err)
-		return nil,err
+		return nil, err
 	}
 
-	crontabmap= make(map[string]*CronTab, len(fs))
+	crontabMap = make(map[string]*CronTab, len(fs))
 
 	for _, f := range fs {
 		if f.IsDir() {
@@ -126,12 +125,13 @@ func ReadAllCrontab() (map[string]*CronTab,error) {
 		keyname := strings.ReplaceAll(filename, ".cro", "")
 		rc := ReadOneCrontab(filename)
 		if rc != nil {
-			crontabmap[keyname] = rc
+			crontabMap[keyname] = rc
+			AddCronInstance(*rc)
 		}
 
 	}
 
-	return crontabmap,nil
+	return crontabMap, nil
 
 }
 
@@ -154,8 +154,8 @@ func ReadOneCrontab(filename string) (c *CronTab) {
 		logimp.Warn(mylog, "读取crontab配置文件%s成功，反序列化失败。%v", filename, err)
 		return nil
 	}
-	if c.CrontabName!=strings.ReplaceAll(filename,".cro","") {
-		logimp.Warn(mylog,"读取crontab配置文件%s成功，反序列化后的crontab和配置文件名(不包括扩展名)不一致,略过。",filename)
+	if c.CrontabName != strings.ReplaceAll(filename, ".cro", "") {
+		logimp.Warn(mylog, "读取crontab配置文件%s成功，反序列化后的crontab和配置文件名(不包括扩展名)不一致,略过。", filename)
 		return nil
 	}
 	logimp.Info(mylog, "读取crontab配置文件%s,反序列化成功", filename)
@@ -181,45 +181,39 @@ func DeleteCrontab(m map[string]*CronTab, cn string) (bool, error) {
 	return true, nil
 }
 
-
-func GetCrontab()map[string]*CronTab{
-	return crontabmap
+func GetCrontab() map[string]*CronTab {
+	return crontabMap
 }
 
 func RunCrontab() {
 
 	GCron.Start()
 
-	select {
-	}
+	select {}
 }
 
-
-var cronrun_param CronTab
-
-func AddCronInstance(c CronTab) error{
-	_,ok:=croninstancemap[c.CrontabName]
-	if ok==true{ //已经存在
+func AddCronInstance(c CronTab) error {
+	_, ok := cronInstanceMap[c.CrontabName]
+	if ok == true { //已经存在
 		return errors.New("cron instance exist!")
 	}
-	cronrun_param=c
-	cid,errc:=GCron.AddJob(c.CrontabExp,c)
-	if errc!=nil{
+	if c.Enable == false {
+		return nil
+	}
+
+	cid, errc := GCron.AddJob(c.CrontabExp, c)
+	if errc != nil {
 		return errc
 	}
-	croninstancemap[c.CrontabName]=(int)(cid)
+	cronInstanceMap[c.CrontabName] = (int)(cid)
 	return nil
 }
 
-func RemoveCronInstance(cname string) error{
-	cid,ok:=croninstancemap[cname]
-	if ok==false{ //不存在,直接返回成功
+func RemoveCronInstance(cname string) error {
+	cid, ok := cronInstanceMap[cname]
+	if ok == false { //不存在,直接返回成功
 		return nil
 	}
 	GCron.Remove(cron.EntryID(cid))
 	return nil
 }
-
-
-
-

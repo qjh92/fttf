@@ -48,6 +48,6 @@ func process(conn net.Conn) {
 	defer conn.Close() // 关闭连接
 	r := bufio.NewReader(conn)
 	w := bufio.NewWriter(conn)
-	netcom.Trans_ProcReqRsp(mainlog, conn, r, w, true)
+	netcom.TransProcReqRsp(mainlog, conn, r, w, true)
 
 }

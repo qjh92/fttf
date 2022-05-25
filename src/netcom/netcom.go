@@ -176,7 +176,7 @@ func RecvFrame(lg *log.Logger, conn net.Conn, r *bufio.Reader) (Frame, error) {
 	return rspframe, nil
 }
 
-func Trans_Req(lg *log.Logger, seqno string, abspath string, srcpath string, destconfigpath string, overwrite bool, conn net.Conn, r *bufio.Reader, w *bufio.Writer) error {
+func TransReq(lg *log.Logger, seqno string, abspath string, srcpath string, destconfigpath string, overwrite bool, conn net.Conn, r *bufio.Reader, w *bufio.Writer) error {
 
 	logimp.Info(lg, "get fire or dir stat,path=[%s]\n", abspath)
 	fw, errs := os.Stat(abspath)
@@ -302,7 +302,7 @@ func Trans_Req(lg *log.Logger, seqno string, abspath string, srcpath string, des
 	return nil
 }
 
-func Trans_ProcReqRsp(lg *log.Logger, conn net.Conn, r *bufio.Reader, w *bufio.Writer, newlog bool) error {
+func TransProcReqRsp(lg *log.Logger, conn net.Conn, r *bufio.Reader, w *bufio.Writer, newlog bool) error {
 	var tslog *log.Logger
 	var tsf *os.File
 	var wfile *os.File
@@ -463,7 +463,7 @@ func Trans_ProcReqRsp(lg *log.Logger, conn net.Conn, r *bufio.Reader, w *bufio.W
 				return ceror
 			}
 
-			return Trans_Req(tslog, seqno, reqframe.AbsPath, c.RemotePath, c.LocalPath, c.OverWrite, conn, r, w)
+			return TransReq(tslog, seqno, reqframe.AbsPath, c.RemotePath, c.LocalPath, c.OverWrite, conn, r, w)
 
 		}
 
@@ -499,7 +499,7 @@ func Trans_ProcReqRsp(lg *log.Logger, conn net.Conn, r *bufio.Reader, w *bufio.W
 	return nil
 }
 
-func Trans_Req_Begin(lg *log.Logger, c cfg.Config, seqno string, abspath string, conn net.Conn, r *bufio.Reader, w *bufio.Writer) error {
+func TransReqBegin(lg *log.Logger, c cfg.Config, seqno string, abspath string, conn net.Conn, r *bufio.Reader, w *bufio.Writer) error {
 
 	cdata, cdataerr := json.Marshal(c)
 	if cdataerr != nil {
@@ -529,13 +529,13 @@ func Trans_Req_Begin(lg *log.Logger, c cfg.Config, seqno string, abspath string,
 		return errsend
 	}
 
-	err := Trans_ProcReqRsp(lg, conn, r, w, false)
+	err := TransProcReqRsp(lg, conn, r, w, false)
 
 	return err
 
 }
 
-func Trans_Query_FileDir(lg *log.Logger, c cfg.Config, seqno string, abspath string, conn net.Conn, r *bufio.Reader, w *bufio.Writer) (isdir bool, fdlist []string, fderr error) {
+func TransQueryFileDir(lg *log.Logger, c cfg.Config, seqno string, abspath string, conn net.Conn, r *bufio.Reader, w *bufio.Writer) (isdir bool, fdlist []string, fderr error) {
 
 	cdata, cdataerr := json.Marshal(c)
 	if cdataerr != nil {

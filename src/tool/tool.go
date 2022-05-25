@@ -2,13 +2,11 @@ package tool
 
 import (
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"io/ioutil"
-	"math/big"
 	"net"
 	"os"
 	"path/filepath"
@@ -29,16 +27,6 @@ func FormatPath(p string) string {
 		}
 	}
 	return p
-}
-
-func MyFunc() {
-	/*s :="abc"
-	s2 :="def"*/
-	r, e := rand.Int(rand.Reader, big.NewInt(999))
-	if e == nil {
-		fmt.Print(r)
-	}
-
 }
 
 func CreateSeqno() string {
@@ -65,11 +53,6 @@ func FileMD5(file string) string {
 		return ""
 	}
 	return StrMd5(string(data))
-}
-
-func PathProc(frelpath string) {
-	s, e := filepath.Rel("c:\\c\\", "c:\\a\\b")
-	fmt.Printf("%s,%v\n", s, e)
 }
 
 func PathSeparatorConvert(oldpath string) string {

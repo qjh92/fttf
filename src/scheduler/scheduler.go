@@ -23,20 +23,21 @@ const (
 )
 
 type Task struct {
-	TaskNo     string
-	RuleName   string
-	Stat       string //状态 TASK_RUNNING,TASK_FAILED,TASK_OK
-	CReateTime string
-	StartTime  string
-	StopTime   string
-	AbsPath    string
-	IsDirMod   bool //是否文件夹模式
-	AutoMod    bool //是否自动任务方式
-	FDCount    int  //文件和文件夹总数
-	FDOKCount  int  //成功传输的数量
-	ErrorMSG   string
-	SubSeqno   []string //传输的流水号,可以根据流水号定位到传输日志
-	SubFDpath  []string
+	TaskNo      string
+	RuleName    string
+	Stat        string //状态 TASK_RUNNING,TASK_FAILED,TASK_OK
+	CReateTime  string
+	StartTime   string
+	StopTime    string
+	AbsPath     string
+	IsDirMod    bool   //是否文件夹模式
+	AutoMod     bool   //是否自动任务方式
+	CrontabName string //自动模式时，crontab配置名称
+	FDCount     int    //文件和文件夹总数
+	FDOKCount   int    //成功传输的数量
+	ErrorMSG    string
+	SubSeqno    []string //传输的流水号,可以根据流水号定位到传输日志
+	SubFDpath   []string
 }
 
 var mylog *log.Logger
@@ -56,7 +57,7 @@ func Init(b map[string]*cfg.Config) {
 	}
 }
 
-func GetTaskMap()map[string]*Task{
+func GetTaskMap() map[string]*Task {
 	return taskmap
 }
 
@@ -231,7 +232,7 @@ func RunTaskWithTaskNO(taskno string) error {
 //调用前要对参数中的路径进行合规性检查，如果不是abspath绝对路径，要先转换为绝对路径
 func runTask(t *Task) error {
 
-	logimp.Info(mylog, "--------------->开始执行Task任务,taskinfo=[%#v]\n", t)
+	logimp.Info(mylog, "开始执行Task任务,taskinfo=[%#v]\n", t)
 	abspath := t.AbsPath
 	rulename := t.RuleName
 
@@ -334,12 +335,6 @@ func runTask(t *Task) error {
 		}
 	}
 
-	//if c.PGmod=="put"{
-	//	return netcom.Trans_Req(clog,seqno,abspath,c.LocalPath,c.RemotePath,c.OverWrite,conn,r,w)
-	//}else{
-	//	return netcom.Trans_Req_Begin(clog,*c,seqno,abspath,conn,r,w)
-	//}
-
 	return nil
 }
 
@@ -363,7 +358,7 @@ func TransOnePut(c cfg.Config, abspath string, srcpath string, destconfigpath st
 	defer conn.Close()
 
 	logimp.Info(clog, "建立连接并发送数据\n")
-	return seqno, netcom.Trans_Req(clog, seqno, abspath, srcpath, destconfigpath, overwrite, conn, r, w)
+	return seqno, netcom.TransReq(clog, seqno, abspath, srcpath, destconfigpath, overwrite, conn, r, w)
 }
 
 func QueryRemote(c cfg.Config, abspath string, srcpath string, destconfigpath string, overwrite bool) (sno string, isdir bool, fdlist []string, fderr error) {
@@ -386,7 +381,7 @@ func QueryRemote(c cfg.Config, abspath string, srcpath string, destconfigpath st
 	defer conn.Close()
 
 	logimp.Info(clog, "建立连接并发送数据\n")
-	dir, s, fderr := netcom.Trans_Query_FileDir(clog, c, seqno, abspath, conn, r, w)
+	dir, s, fderr := netcom.TransQueryFileDir(clog, c, seqno, abspath, conn, r, w)
 	if fderr != nil {
 		logimp.Warn(clog, "resp frame error=%#v\n", fderr)
 		return seqno, false, nil, fderr
@@ -415,7 +410,7 @@ func TransOneGut(c cfg.Config, abspath string, srcpath string, destconfigpath st
 
 	logimp.Info(clog, "建立连接并发送数据\n")
 
-	return seqno, netcom.Trans_Req_Begin(clog, c, seqno, abspath, conn, r, w)
+	return seqno, netcom.TransReqBegin(clog, c, seqno, abspath, conn, r, w)
 }
 
 func GetTaskList(dt string) ([]string, error) {

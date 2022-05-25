@@ -25,10 +25,10 @@ func main() {
 
 	mylog, fw = logimp.InitLog(logname)
 	defer fw.Close()
-	logimp.Info(mylog, "%s\n", startinfo())
+	logimp.Info(mylog, "%s\n", startInfo())
 
 	cfg.Init(mylog)
-	configmap,_ = cfg.ReadAllConfig()
+	configmap, _ = cfg.ReadAllConfig()
 
 	http.Init(mylog, configmap)
 
@@ -75,7 +75,7 @@ func goRunCrontab() {
 	crontab.RunCrontab()
 }
 
-func startinfo() string {
+func startInfo() string {
 	str := `
 
     ____________   __    __       ____________
