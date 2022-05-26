@@ -66,7 +66,7 @@ func CreateTask(rulename string, path string) (taskno string, initerror error) {
 	c, ok := configmap[rulename]
 	if ok == false {
 		logimp.Warn(mylog, "rulename [%s] not exist,error\n", rulename)
-		return "", errors.New(rulename + " not exist")
+		return "", errors.New("rulename not exist,"+rulename)
 	}
 
 	tmppath := tool.FormatPath(path)

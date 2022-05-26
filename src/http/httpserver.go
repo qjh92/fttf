@@ -400,19 +400,26 @@ func goTrans(w http.ResponseWriter, r *http.Request) {
 
 	var srcfileordirpath string
 
-	v, ok = params["SrcFileOrDirPath"]
+	v, ok = params["SrcPath"]
 	if ok && len(v[0]) > 0 {
 		srcfileordirpath = v[0]
 	} else {
-		ResponseERROR(w, "SrcFileOrDirPath参数不合法!")
+		ResponseERROR(w, "SrcPath参数不合法!")
 		return
 	}
 
+
+
 	taskno, err := scheduler.CreateTask(rulename, srcfileordirpath)
+	if err!=nil{
+		ResponseERRORFormat(w, "CreateTask error,%v",err)
+		return
+	}
 
 	err = scheduler.RunTaskWithTaskNO(taskno)
 	if err != nil {
 		ResponseERRORFormat(w, "taskno=%s,error=%v", taskno, err)
+		return
 	} else {
 		ResponseOK(w, "ok! taskno="+taskno)
 	}

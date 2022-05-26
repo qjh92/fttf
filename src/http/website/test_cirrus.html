@@ -15,44 +15,12 @@
     </style>
 
     <script>
-        function go(){
-            var RuleName=$('#RuleName').val();
-            var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
-
-            $.ajax({
-                url: "/go",
-                data: {
-                    RuleName: RuleName,
-                    SrcFileOrDirPath: SrcFileOrDirPath
-                },
-                type: "POST",
-                //dataType: "json",
-                success: function(data) {
-                    console.log(data);
-                    var rspjson = $.parseJSON(data);
-                    if(rspjson.RspCode==0){
-                        $('#RspMsg').val(rspjson.RspMsg);
-
-                        alert("操作成功!")
-
-                    }else
-                    {
-                        $('#RspMsg').val(rspjson.RspMsg);
-                        alert("操作失败!")
-                    }
-                },
-                error:()=>{  // 发送失败的回调函数
-                    console.log("失败");
-                }
-            });
-        }
-
         function go_get(){
             var RuleName=$('#RuleName').val();
-            var SrcFileOrDirPath=$('#SrcFileOrDirPath').val();
+            var SrcPath=$('#SrcPath').val();
 
             $.ajax({
-                url: "/go?RuleName="+RuleName+"&SrcFileOrDirPath="+SrcFileOrDirPath,
+                url: "/go?RuleName="+RuleName+"&SrcPath="+SrcPath,
 
                 type: "GET",
                 //dataType: "json",
@@ -98,6 +66,7 @@
             });
         }
 
+
     </script>
 
 </head>
@@ -110,7 +79,9 @@
                 <p class="m-0">RuleName:</p>
             </div>
             <div class="col-xs-8 level-item">
-                <input id="RuleName"  class="input--xs" autocomplete="off" type="text" placeholder="RuleName">
+                <input id="RuleName" list="rulenamelist"  class="input--xs" autocomplete="off" type="text" placeholder="RuleName">
+                <datalist id="rulenamelist">
+                </datalist>
             </div>
         </div>
 
@@ -119,7 +90,7 @@
                 <p class="m-0">SrcPath:</p>
             </div>
             <div class="col-xs-8 level-item">
-                <input id="SrcFileOrDirPath"  class="input--xs" type="text" placeholder="SrcPath">
+                <input id="SrcPath"  class="input--xs" type="text" placeholder="SrcPath">
             </div>
         </div>
 
@@ -129,10 +100,10 @@
             </div>
             <div class="col-xs-8 level-item">
                 <div class="col-xs-6 level-item">
-                    <button class="btn-info btn--xs" onclick="go();" >Post提交</button>
+                    <button class="btn-info btn--xs" onclick="go_get();" >Get提交</button>
                 </div>
                 <div class="col-xs-6 level-item">
-                    <button class="btn-warning btn--xs" onclick="go_get();" >Get提交</button>
+                    <button class="btn-warning btn--xs"  >清  空</button>
                 </div>
             </div>
         </div>
@@ -146,16 +117,44 @@
             </div>
         </div>
 
-        <hr style="margin: 20px;">
-        <div class="row level">
-            <div class="col-xs-12 level-item">
-                <button class="btn-info btn--xs" onclick="flush();" >刷新Rule规则</button>
-            </div>
-        </div>
-
 
     </div>
 </div>
 
+<script type="text/javascript">
+
+    function bindRuleList(id){
+        var rulelist=$('#'+id)
+        rulelist.empty()
+        $.ajax({
+            url: "/listconfig",
+            type: "GET",
+            //dataType: "json",
+            success: function(data) {
+                console.log(data);
+                var rspjson = $.parseJSON(data);
+                if(rspjson.RspCode==0){
+                    if (rspjson.RspMsg!=null &&  rspjson.RspMsg.length > 0) {
+                        for (var i = 0; i < rspjson.RspMsg.length; i++) {
+                            var item=rspjson.RspMsg[i];
+                            rulelist.append('<option>'+item+'</option>');
+                        }
+                    }
+
+                }else
+                {
+                    alert("操作失败!")
+                }
+            },
+            error:()=>{  // 发送失败的回调函数
+                console.log("失败");
+            }
+        });
+    }
+
+    $(document).ready(bindRuleList("rulenamelist"));
+
+
+</script>
 </body>
 </html>
