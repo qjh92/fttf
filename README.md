@@ -68,7 +68,7 @@ drwxrwxr-x 2 fttf fttf        6 5月  26 14:05 crontabs   #定时任务配置
 
 启动服务后，可用通过访问 http://ip:hport进入管理控制台，采用默认方式启动时，访问地址 http://localhost:32555
 
-![png](https://github.com/qjh92/fttf/blob/master/README.assets/image-20220526113749459.png)
+![png](https://github.com/qjh92/fttf/master/README.assets/image-20220526113749459.png)
 
 ##### Add
 
