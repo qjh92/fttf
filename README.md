@@ -68,13 +68,13 @@ drwxrwxr-x 2 fttf fttf        6 5月  26 14:05 crontabs   #定时任务配置
 
 启动服务后，可用通过访问 http://ip:hport进入管理控制台，采用默认方式启动时，访问地址 http://localhost:32555
 
-![png](https://github.com/qjh92/fttf/master/README.assets/image-20220526113749459.png)
+![png](https://github.com/qjh92/fttf/blob/master/README.assets/image-20220526113749459.png)
 
 ##### Add
 
 用于添加传输规则，只有添加传输规则以后，才能够按预定规则执行文件传输任务
 
-<img src="README.assets/image-20220526114600037.png" alt="image-20220526114600037" style="border:1px solid #ccc;"  />
+<img src="https://github.com/qjh92/fttf/blob/master/README.assets/image-20220526114600037.png" alt="png" style="border:1px solid #ccc;"  />
 
 >RuleName：传输规则名称，唯一不重复
 >
