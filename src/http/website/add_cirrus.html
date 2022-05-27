@@ -59,7 +59,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         $('#RspMsg').val("操作成功!");
 

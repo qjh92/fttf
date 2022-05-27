@@ -26,7 +26,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         $('#RspMsg').val(rspjson.RspMsg);
                         alert("操作成功!")
@@ -50,7 +50,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
 
                         alert("操作成功!")
@@ -132,7 +132,7 @@
             //dataType: "json",
             success: function(data) {
                 console.log(data);
-                var rspjson = $.parseJSON(data);
+                var rspjson = typeof data=="string"? $.parseJSON(data):data;
                 if(rspjson.RspCode==0){
                     if (rspjson.RspMsg!=null &&  rspjson.RspMsg.length > 0) {
                         for (var i = 0; i < rspjson.RspMsg.length; i++) {

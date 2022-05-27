@@ -27,14 +27,13 @@ var logname string = "main.log"
 
 var configmap map[string]*cfg.Config
 
-
 /*
 fttf有两种工作模式
 一种是服务端运行, 需要指定sport和hport
 一种是客户端模式，需要指定config和path参数
 程序通过判断是否具备config和path参数，来决定用哪种方式运行
 fttf -config atob -path qjh -ip x.x.x.x -port xxxx
- */
+*/
 
 func main() {
 
@@ -61,13 +60,13 @@ func main() {
 	flag.Parse()
 
 	//客户端模式
-	if config!=""{
-		url:=fmt.Sprintf("http://%s:%d/go?RuleName=%s&SrcPath=%s",ip,port,config,path)
-		fmt.Printf("Http Get %s\n",url)
-		b,_:=goClient(url)
-		if b{
+	if config != "" {
+		url := fmt.Sprintf("http://%s:%d/go?RuleName=%s&SrcPath=%s", ip, port, config, path)
+
+		b, _ := goClient(url)
+		if b {
 			os.Exit(0) //成功退出
-		}else{
+		} else {
 			os.Exit(1) //异常退出
 		}
 	}
@@ -90,8 +89,6 @@ func main() {
 	crontab.Init(mylog)
 	crontab.ReadAllCrontab()
 
-
-
 	wg.Add(1) // 登记1个goroutine
 	go goRunHttpServer(hport)
 
@@ -105,7 +102,7 @@ func main() {
 
 }
 
-func goClient(url string)(bool,error) {
+func goClient(url string) (bool, error) {
 
 	// 创建 client 和 resp 对象
 	var client nhttp.Client
@@ -116,34 +113,26 @@ func goClient(url string)(bool,error) {
 
 	resp, err := client.Get(url)
 
-	fmt.Printf("%#v%#v\n",resp,err)
-
 	defer resp.Body.Close()
 	if err != nil {
-		fmt.Printf("%#v\n", err)
-		return false,err
+		return false, err
 	}
 
 	body, errb := ioutil.ReadAll(resp.Body)
 	if errb != nil {
-		fmt.Printf("%#v\n", errb)
 		return false, errb
 	}
 
 	var res http.Rsp
-	errj := json.Unmarshal(body,&res)
-	if errj!=nil{
-		fmt.Printf("%#v\n", errj)
-		return false,errj
+	errj := json.Unmarshal(body, &res)
+	if errj != nil {
+		return false, errj
 	}
 
-	if res.RspCode!=cfg.OK{
-		fmt.Printf("%#v\n", res)
-		return false,errors.New(fmt.Sprintf("%s",res.RspMsg))
+	if res.RspCode != cfg.OK {
+		return false, errors.New(fmt.Sprintf("%s", res.RspMsg))
 	}
-
-	fmt.Printf("%#v\n", res)
-	return true,nil
+	return true, nil
 
 }
 

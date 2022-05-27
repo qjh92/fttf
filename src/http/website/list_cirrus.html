@@ -51,7 +51,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         binddatalist(rspjson)
 
@@ -143,7 +143,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     var str=""
                     if(rspjson.RspCode==0){
                         // for(var p in rspjson.RspMsg){//遍历json对象的每个key/value对,p为key
@@ -179,7 +179,7 @@
                     //dataType: "json",
                     success: function(data) {
                         console.log(data);
-                        var rspjson = $.parseJSON(data);
+                        var rspjson = typeof data=="string"? $.parseJSON(data):data;
                         if(rspjson.RspCode==0){
                             alert("删除成功!")
                             min_key=""

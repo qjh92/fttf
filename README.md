@@ -151,7 +151,7 @@ fttf -config atob -path /home/a -ip x.x.x.x -port xxxx
 >
 >port：指定要连接的管理端端口，默认32555
 >
->当shell命令返回后，如果执行成功，返回结果码为0，失败为1
+>可以编写shell脚本，在脚本中使用fttf客户端模式发送请求，根据fttf命令返回结果判断是否执行成功。如果执行成功，返回结果码为0，失败为1
 
 ##### curl请求
 

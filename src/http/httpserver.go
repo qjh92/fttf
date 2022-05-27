@@ -408,11 +408,9 @@ func goTrans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-
 	taskno, err := scheduler.CreateTask(rulename, srcfileordirpath)
-	if err!=nil{
-		ResponseERRORFormat(w, "CreateTask error,%v",err)
+	if err != nil {
+		ResponseERRORFormat(w, "CreateTask error,%v", err)
 		return
 	}
 
@@ -753,6 +751,7 @@ func changeCrontabStat(w http.ResponseWriter, r *http.Request) {
 
 func Response(w http.ResponseWriter, rsp Rsp) {
 	data, _ := json.Marshal(rsp)
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "%s", data)
 
 }

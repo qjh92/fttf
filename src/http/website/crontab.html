@@ -153,7 +153,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         if (rspjson.RspMsg!=null &&  rspjson.RspMsg.length > 0) {
                             for (var i = 0; i < rspjson.RspMsg.length; i++) {
@@ -193,7 +193,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         $('#RspMsg').val("操作成功!");
 
@@ -219,7 +219,7 @@
                 //dataType: "json",
                 success: function(data) {
                     console.log(data);
-                    var rspjson = $.parseJSON(data);
+                    var rspjson = typeof data=="string"? $.parseJSON(data):data;
                     if(rspjson.RspCode==0){
                         binddatalist(rspjson)
                     }else
@@ -307,7 +307,7 @@
                     //dataType: "json",
                     success: function(data) {
                         console.log(data);
-                        var rspjson = $.parseJSON(data);
+                        var rspjson = typeof data=="string"? $.parseJSON(data):data;
                         if(rspjson.RspCode==0){
                             alert("删除成功!")
                             query()
@@ -333,7 +333,7 @@
                     //dataType: "json",
                     success: function(data) {
                         console.log(data);
-                        var rspjson = $.parseJSON(data);
+                        var rspjson = typeof data=="string"? $.parseJSON(data):data;
                         if(rspjson.RspCode==0){
                             query()
                         }else
